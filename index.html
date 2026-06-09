@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ShopSmart · Find the cheapest basket across supermarkets</title>
+<meta name="description" content="ShopSmart is a full-stack price-comparison app: build a shopping list, compare prices across supermarkets, and automatically find the cheapest store for your basket. An interactive project showcase." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#10160f;
+    --paper:#f3f6f1;
+    --paper-2:#e7ede2;
+    --line:#d2dcc8;
+    --accent:#2e7d4f;     /* fresh green */
+    --accent-2:#c4622a;
+    --muted:#5f6b58;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 18px 40px -28px rgba(16,22,15,.5);
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:500;line-height:1.08;letter-spacing:-.01em}
+  a{color:var(--accent);text-decoration:none}
+  code,.mono{font-family:"JetBrains Mono",monospace}
+
+  header.bar{position:sticky;top:0;z-index:30;background:rgba(243,246,241,.85);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{font-family:"Fraunces",serif;font-size:1.05rem;display:flex;align-items:center;gap:9px}
+  .cart{font-size:1.1rem}
+  nav.links a{color:var(--muted);font-size:.86rem;margin-left:22px;font-weight:500}
+  nav.links a:hover{color:var(--ink)}
+  @media(max-width:760px){nav.links{display:none}}
+
+  .hero{padding:84px 0 60px;border-bottom:1px solid var(--line)}
+  .kicker{font-family:"JetBrains Mono",monospace;font-size:.74rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  .hero h1{font-size:clamp(2.4rem,5.4vw,4.2rem);margin:0 0 20px;max-width:16ch}
+  .hero p.lede{font-size:1.18rem;max-width:60ch;color:#212a20;margin:0 0 30px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:999px;
+    font-weight:600;font-size:.9rem;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    transition:transform .15s ease}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+
+  /* ---- price comparison demo ---- */
+  .demo{margin-top:52px;background:#fff;border:1px solid var(--line);border-radius:var(--r);
+    box-shadow:var(--shadow);overflow:hidden}
+  .demo .top{padding:14px 18px;border-bottom:1px solid var(--line);background:var(--paper-2)}
+  .demo .top .t{font-family:"Fraunces",serif;font-size:1rem}
+  .demo .top .h{font-size:.8rem;color:var(--muted);margin-top:2px}
+  .catalog{display:flex;gap:8px;flex-wrap:wrap;padding:16px 18px 6px}
+  .item{font-size:.84rem;font-weight:500;padding:7px 13px;border-radius:999px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;color:var(--ink);transition:.15s;display:inline-flex;gap:7px;align-items:center}
+  .item[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .item .p{opacity:.6;font-family:"JetBrains Mono",monospace;font-size:.72rem}
+  .item[aria-pressed="true"] .p{opacity:.85}
+  .cmp{padding:8px 18px 20px;overflow-x:auto}
+  table.prices{width:100%;border-collapse:collapse;min-width:440px}
+  table.prices th,table.prices td{padding:10px 12px;text-align:right;font-size:.88rem;border-bottom:1px solid var(--line)}
+  table.prices th:first-child,table.prices td:first-child{text-align:left}
+  table.prices thead th{font-family:"JetBrains Mono",monospace;font-size:.66rem;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);font-weight:600}
+  table.prices .store{position:relative}
+  table.prices tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:none;font-family:"JetBrains Mono",monospace}
+  .best{background:rgba(46,125,79,.1)}
+  .bestcol{box-shadow:inset 0 0 0 2px var(--accent);border-radius:8px}
+  .winnerbadge{font-family:"JetBrains Mono",monospace;font-size:.6rem;font-weight:700;color:#fff;background:var(--accent);
+    padding:2px 7px;border-radius:5px;display:inline-block;margin-top:4px}
+  .cheapcell{color:var(--accent);font-weight:600}
+  .empty{color:var(--muted);font-size:.9rem;text-align:center;padding:36px 0}
+  .summary{padding:0 18px 18px;font-size:.9rem}
+  .summary b{color:var(--accent)}
+
+  section{padding:74px 0;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  h2{font-size:clamp(1.8rem,3.6vw,2.6rem);margin:0 0 14px}
+  .section-lede{max-width:62ch;color:#272f25;font-size:1.05rem}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+  @media(max-width:760px){.grid3{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow)}
+  .card .ic{font-size:1.5rem}
+  .card h3{font-size:1.14rem;margin:10px 0 6px}
+  .card p{margin:0;font-size:.92rem;color:#3b443a}
+
+  .archi{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-top:32px}
+  .box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 20px;text-align:center;min-width:150px;box-shadow:var(--shadow)}
+  .box .tt{font-family:"Fraunces",serif;font-size:1rem}
+  .box .ss{font-size:.74rem;color:var(--muted);font-family:"JetBrains Mono",monospace}
+  .arrow{color:var(--muted);padding:0 14px;font-size:1.2rem}
+  @media(max-width:680px){.archi{flex-direction:column;align-items:stretch}.arrow{transform:rotate(90deg);padding:6px 0;text-align:center}}
+
+  .stackgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:34px}
+  @media(max-width:760px){.stackgrid{grid-template-columns:1fr}}
+  .stackcol h4{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  .stackcol ul{list-style:none;margin:0;padding:0}
+  .stackcol li{font-size:.88rem;padding:5px 0;border-bottom:1px solid var(--line);color:#363f35}
+
+  footer{padding:48px 0 70px}
+  footer .wrap{color:var(--muted);font-size:.85rem}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="brand"><span class="cart">🛒</span> ShopSmart</div>
+    <nav class="links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#stack">Stack</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="kicker">Full-Stack App · React + FastAPI + Azure</p>
+    <h1>Build your basket. Find the cheapest store.</h1>
+    <p class="lede">ShopSmart helps you find the best prices across supermarkets. Add items to your shopping list, compare prices store by store, and let it automatically identify the cheapest store for your whole basket.</p>
+    <div class="cta">
+      <a class="btn" href="#features">See features →</a>
+      <a class="btn ghost" href="#how">Architecture</a>
+    </div>
+
+    <div class="demo" id="demo">
+      <div class="top">
+        <div class="t">Price comparison</div>
+        <div class="h">Tap items to add them to your basket — the cheapest store updates live.</div>
+      </div>
+      <div class="catalog" id="catalog"></div>
+      <div class="cmp" id="cmp"></div>
+      <div class="summary" id="summary"></div>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:10px">↑ A scripted illustration — store names and prices are sample data.</p>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap reveal">
+    <p class="eyebrow">01 — Features</p>
+    <h2>Everything you need for a cheaper shop.</h2>
+    <div class="grid3">
+      <div class="card"><div class="ic">📝</div><h3>Shopping list</h3><p>Add items with autocomplete and manage your whole list in one place.</p></div>
+      <div class="card"><div class="ic">🏪</div><h3>Multi-store comparison</h3><p>Compare item prices across multiple supermarkets side by side.</p></div>
+      <div class="card"><div class="ic">💸</div><h3>Best-price finder</h3><p>Automatically identifies the cheapest store for your basket.</p></div>
+      <div class="card"><div class="ic">💾</div><h3>Persistent state</h3><p>Your list survives page navigation and browser sessions.</p></div>
+      <div class="card"><div class="ic">🔐</div><h3>Authentication</h3><p>Sign up and log in to keep your lists private.</p></div>
+      <div class="card"><div class="ic">📱</div><h3>Responsive</h3><p>Works on desktop and mobile alike.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap reveal">
+    <p class="eyebrow">02 — Architecture</p>
+    <h2>A containerised full-stack app on Azure.</h2>
+    <p class="section-lede">A React/Vite frontend (served by Nginx) talks to a FastAPI backend, which persists to PostgreSQL — all containerised and deployed on Azure App Service with CI/CD.</p>
+    <div class="archi">
+      <div class="box"><div class="tt">React + Vite</div><div class="ss">Nginx · Azure</div></div>
+      <span class="arrow">→</span>
+      <div class="box"><div class="tt">FastAPI</div><div class="ss">Azure App Svc</div></div>
+      <span class="arrow">→</span>
+      <div class="box"><div class="tt">PostgreSQL</div><div class="ss">Azure Flexible</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="wrap reveal">
+    <p class="eyebrow">03 — Stack</p>
+    <h2>Built with.</h2>
+    <div class="stackgrid">
+      <div class="stackcol"><h4>Frontend</h4><ul><li>React 18 + Vite</li><li>React Router</li><li>Custom CSS</li><li>Nginx (prod)</li></ul></div>
+      <div class="stackcol"><h4>Backend</h4><ul><li>FastAPI (Python 3.11)</li><li>SQLAlchemy ORM</li><li>Alembic migrations</li><li>PostgreSQL</li></ul></div>
+      <div class="stackcol"><h4>DevOps</h4><ul><li>Docker + ACR</li><li>GitHub Actions CI/CD</li><li>Azure App Service</li><li>Application Insights</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    ShopSmart · an interactive project showcase, built from scratch.
+    Store names and prices in the demo are sample data.
+  </div>
+</footer>
+
+<script>
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  const STORES=['FreshCo','MartMax','GreenBasket'];
+  // per-item prices across the 3 stores (sample data)
+  const ITEMS=[
+    {n:'Milk 1L',     e:'🥛', p:[1.10,0.95,1.05]},
+    {n:'Bread',       e:'🍞', p:[1.40,1.55,1.30]},
+    {n:'Eggs ×12',    e:'🥚', p:[2.60,2.40,2.75]},
+    {n:'Bananas 1kg', e:'🍌', p:[1.20,1.15,1.10]},
+    {n:'Coffee 250g', e:'☕', p:[3.90,4.20,3.70]},
+    {n:'Rice 1kg',    e:'🍚', p:[1.80,1.70,1.90]},
+    {n:'Chicken 1kg', e:'🍗', p:[5.50,5.20,5.80]},
+    {n:'Pasta 500g',  e:'🍝', p:[0.95,1.05,0.90]},
+  ];
+  const sel=new Set([0,1,3]); // start with a small basket
+
+  const catalog=document.getElementById('catalog');
+  const cmp=document.getElementById('cmp');
+  const summary=document.getElementById('summary');
+
+  function buildCatalog(){
+    catalog.innerHTML=ITEMS.map((it,i)=>`<button class="item" data-i="${i}" aria-pressed="${sel.has(i)}">${it.e} ${it.n} <span class="p">€${Math.min(...it.p).toFixed(2)}+</span></button>`).join('');
+  }
+  function render(){
+    const items=[...sel];
+    if(!items.length){ cmp.innerHTML='<div class="empty">Your basket is empty — tap an item above to compare prices.</div>'; summary.innerHTML=''; return; }
+    const totals=STORES.map((_,si)=>items.reduce((s,i)=>s+ITEMS[i].p[si],0));
+    const minTotal=Math.min(...totals); const winner=totals.indexOf(minTotal);
+    let head=`<tr><th>Item</th>${STORES.map((s,si)=>`<th class="store ${si===winner?'best':''}">${s}</th>`).join('')}</tr>`;
+    let body=items.map(i=>{
+      const row=ITEMS[i]; const cheapest=Math.min(...row.p);
+      return `<tr><td>${row.e} ${row.n}</td>${row.p.map((v,si)=>`<td class="${si===winner?'best':''} ${v===cheapest?'cheapcell':''}">€${v.toFixed(2)}</td>`).join('')}</tr>`;
+    }).join('');
+    let foot=`<tr><td>Basket total</td>${totals.map((t,si)=>`<td class="${si===winner?'best':''}">€${t.toFixed(2)}${si===winner?'<div class="winnerbadge">CHEAPEST</div>':''}</td>`).join('')}</tr>`;
+    cmp.innerHTML=`<table class="prices"><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table>`;
+    const save=(Math.max(...totals)-minTotal).toFixed(2);
+    summary.innerHTML=`Cheapest basket: <b>${STORES[winner]}</b> at <b>€${minTotal.toFixed(2)}</b> — you save €${save} vs. the priciest store.`;
+  }
+  catalog.addEventListener('click',e=>{
+    const b=e.target.closest('.item'); if(!b) return;
+    const i=+b.dataset.i; sel.has(i)?sel.delete(i):sel.add(i);
+    b.setAttribute('aria-pressed', sel.has(i)?'true':'false'); render();
+  });
+  buildCatalog(); render();
+</script>
+</body>
+</html>
