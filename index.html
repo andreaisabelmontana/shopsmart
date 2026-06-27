@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ShopSmart · Find the cheapest basket across supermarkets</title>
-<meta name="description" content="ShopSmart is a full-stack price-comparison app: build a shopping list, compare prices across supermarkets, and automatically find the cheapest store for your basket. An interactive project showcase." />
+<meta name="description" content="ShopSmart is a basket-optimization engine: build a shopping list and find the cheapest plan — one store, or split across stores with a per-trip cost. Real Python optimizer; this page mirrors it in the browser over a synthetic catalog." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -42,7 +42,7 @@
   .kicker{font-family:"JetBrains Mono",monospace;font-size:.74rem;letter-spacing:.18em;
     text-transform:uppercase;color:var(--accent);margin:0 0 18px}
   .hero h1{font-size:clamp(2.4rem,5.4vw,4.2rem);margin:0 0 20px;max-width:16ch}
-  .hero p.lede{font-size:1.18rem;max-width:60ch;color:#212a20;margin:0 0 30px}
+  .hero p.lede{font-size:1.18rem;max-width:62ch;color:#212a20;margin:0 0 30px}
   .cta{display:flex;gap:12px;flex-wrap:wrap}
   .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:999px;
     font-weight:600;font-size:.9rem;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
@@ -62,28 +62,39 @@
   .item[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
   .item .p{opacity:.6;font-family:"JetBrains Mono",monospace;font-size:.72rem}
   .item[aria-pressed="true"] .p{opacity:.85}
-  .cmp{padding:8px 18px 20px;overflow-x:auto}
-  table.prices{width:100%;border-collapse:collapse;min-width:440px}
-  table.prices th,table.prices td{padding:10px 12px;text-align:right;font-size:.88rem;border-bottom:1px solid var(--line)}
+  .controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:6px 18px 14px;font-size:.84rem;color:var(--muted)}
+  .controls label{display:flex;align-items:center;gap:8px}
+  .controls input[type=range]{accent-color:var(--accent)}
+  .controls .val{font-family:"JetBrains Mono",monospace;color:var(--ink);font-weight:600}
+  .cmp{padding:8px 18px 6px;overflow-x:auto}
+  table.prices{width:100%;border-collapse:collapse;min-width:520px}
+  table.prices th,table.prices td{padding:9px 11px;text-align:right;font-size:.86rem;border-bottom:1px solid var(--line)}
   table.prices th:first-child,table.prices td:first-child{text-align:left}
-  table.prices thead th{font-family:"JetBrains Mono",monospace;font-size:.66rem;letter-spacing:.06em;
+  table.prices thead th{font-family:"JetBrains Mono",monospace;font-size:.64rem;letter-spacing:.06em;
     text-transform:uppercase;color:var(--muted);font-weight:600}
-  table.prices .store{position:relative}
   table.prices tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:none;font-family:"JetBrains Mono",monospace}
   .best{background:rgba(46,125,79,.1)}
-  .bestcol{box-shadow:inset 0 0 0 2px var(--accent);border-radius:8px}
   .winnerbadge{font-family:"JetBrains Mono",monospace;font-size:.6rem;font-weight:700;color:#fff;background:var(--accent);
     padding:2px 7px;border-radius:5px;display:inline-block;margin-top:4px}
   .cheapcell{color:var(--accent);font-weight:600}
+  .na{color:#b9c2b0}
   .empty{color:var(--muted);font-size:.9rem;text-align:center;padding:36px 0}
-  .summary{padding:0 18px 18px;font-size:.9rem}
-  .summary b{color:var(--accent)}
+
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:10px 18px 18px}
+  @media(max-width:760px){.plans{grid-template-columns:1fr}}
+  .plan{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:var(--paper)}
+  .plan.win{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+  .plan .lab{font-family:"JetBrains Mono",monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .plan .big{font-family:"Fraunces",serif;font-size:1.5rem;margin:6px 0 2px}
+  .plan .sub{font-size:.78rem;color:var(--muted);line-height:1.45}
+  .plan .tag{display:inline-block;margin-top:8px;font-family:"JetBrains Mono",monospace;font-size:.58rem;font-weight:700;
+    color:var(--accent);background:rgba(46,125,79,.12);padding:2px 8px;border-radius:5px}
 
   section{padding:74px 0;border-bottom:1px solid var(--line)}
   .eyebrow{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.16em;
     text-transform:uppercase;color:var(--muted);margin:0 0 12px}
   h2{font-size:clamp(1.8rem,3.6vw,2.6rem);margin:0 0 14px}
-  .section-lede{max-width:62ch;color:#272f25;font-size:1.05rem}
+  .section-lede{max-width:64ch;color:#272f25;font-size:1.05rem}
 
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
   @media(max-width:760px){.grid3{grid-template-columns:1fr}}
@@ -91,19 +102,18 @@
   .card .ic{font-size:1.5rem}
   .card h3{font-size:1.14rem;margin:10px 0 6px}
   .card p{margin:0;font-size:.92rem;color:#3b443a}
+  .card code{font-size:.8rem;color:var(--accent-2)}
 
-  .archi{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-top:32px}
-  .box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 20px;text-align:center;min-width:150px;box-shadow:var(--shadow)}
-  .box .tt{font-family:"Fraunces",serif;font-size:1rem}
-  .box .ss{font-size:.74rem;color:var(--muted);font-family:"JetBrains Mono",monospace}
-  .arrow{color:var(--muted);padding:0 14px;font-size:1.2rem}
-  @media(max-width:680px){.archi{flex-direction:column;align-items:stretch}.arrow{transform:rotate(90deg);padding:6px 0;text-align:center}}
+  pre.code{background:#10160f;color:#e7ede2;border-radius:12px;padding:18px 20px;overflow-x:auto;
+    font-family:"JetBrains Mono",monospace;font-size:.82rem;line-height:1.6;margin-top:30px;box-shadow:var(--shadow)}
+  pre.code .c{color:#8aa07f}
+  pre.code .s{color:#9bd5b1}
 
-  .stackgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:34px}
-  @media(max-width:760px){.stackgrid{grid-template-columns:1fr}}
-  .stackcol h4{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
-  .stackcol ul{list-style:none;margin:0;padding:0}
-  .stackcol li{font-size:.88rem;padding:5px 0;border-bottom:1px solid var(--line);color:#363f35}
+  table.deal{width:100%;border-collapse:collapse;margin-top:30px;font-size:.9rem;background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+  table.deal th,table.deal td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:right}
+  table.deal th:first-child,table.deal td:first-child{text-align:left}
+  table.deal thead th{font-family:"JetBrains Mono",monospace;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  table.deal tr.win td{background:rgba(46,125,79,.09);font-weight:600}
 
   footer{padding:48px 0 70px}
   footer .wrap{color:var(--muted);font-size:.85rem}
@@ -117,82 +127,107 @@
   <div class="wrap">
     <div class="brand"><span class="cart">🛒</span> ShopSmart</div>
     <nav class="links">
-      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
       <a href="#how">How it works</a>
-      <a href="#stack">Stack</a>
+      <a href="#unit">Unit pricing</a>
+      <a href="#code">Code</a>
     </nav>
   </div>
 </header>
 
 <div class="hero">
   <div class="wrap">
-    <p class="kicker">Full-Stack App · React + FastAPI + Azure</p>
-    <h1>Build your basket. Find the cheapest store.</h1>
-    <p class="lede">ShopSmart helps you find the best prices across supermarkets. Add items to your shopping list, compare prices store by store, and let it automatically identify the cheapest store for your whole basket.</p>
+    <p class="kicker">Basket optimization · Python + pandas</p>
+    <h1>Build your basket. Find the cheapest plan.</h1>
+    <p class="lede">ShopSmart is a basket-optimization engine. Give it a shopping list and a price catalog, and it finds the cheapest way to shop — a single store, or a split across stores where each extra trip has to earn its place against a per-visit cost. The optimizer is real Python; this page mirrors its logic in the browser over the project's committed synthetic catalog.</p>
     <div class="cta">
-      <a class="btn" href="#features">See features →</a>
-      <a class="btn ghost" href="#how">Architecture</a>
+      <a class="btn" href="#demo">Try the demo →</a>
+      <a class="btn ghost" href="#how">How it works</a>
     </div>
 
     <div class="demo" id="demo">
       <div class="top">
-        <div class="t">Price comparison</div>
-        <div class="h">Tap items to add them to your basket — the cheapest store updates live.</div>
+        <div class="t">Live basket optimizer</div>
+        <div class="h">Tap items to build a basket, drag the trip cost — the three strategies recompute live, same logic as the Python engine.</div>
       </div>
       <div class="catalog" id="catalog"></div>
+      <div class="controls">
+        <label>Trip cost per store
+          <input type="range" id="trip" min="0" max="4" step="0.5" value="1" />
+          <span class="val" id="tripval">€1.00</span>
+        </label>
+        <span>· cheapest cells in <b style="color:var(--accent)">green</b> · “n/a” = store doesn’t carry it</span>
+      </div>
       <div class="cmp" id="cmp"></div>
-      <div class="summary" id="summary"></div>
+      <div class="plans" id="plans"></div>
     </div>
-    <p style="font-size:.8rem;color:var(--muted);margin-top:10px">↑ A scripted illustration — store names and prices are sample data.</p>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:10px">↑ Mirrors the real Python optimizer over the committed synthetic catalog (4 stores × 20 products). Store names and prices are invented for demonstration.</p>
   </div>
 </div>
 
-<section id="features">
-  <div class="wrap reveal">
-    <p class="eyebrow">01 — Features</p>
-    <h2>Everything you need for a cheaper shop.</h2>
-    <div class="grid3">
-      <div class="card"><div class="ic">📝</div><h3>Shopping list</h3><p>Add items with autocomplete and manage your whole list in one place.</p></div>
-      <div class="card"><div class="ic">🏪</div><h3>Multi-store comparison</h3><p>Compare item prices across multiple supermarkets side by side.</p></div>
-      <div class="card"><div class="ic">💸</div><h3>Best-price finder</h3><p>Automatically identifies the cheapest store for your basket.</p></div>
-      <div class="card"><div class="ic">💾</div><h3>Persistent state</h3><p>Your list survives page navigation and browser sessions.</p></div>
-      <div class="card"><div class="ic">🔐</div><h3>Authentication</h3><p>Sign up and log in to keep your lists private.</p></div>
-      <div class="card"><div class="ic">📱</div><h3>Responsive</h3><p>Works on desktop and mobile alike.</p></div>
-    </div>
-  </div>
-</section>
-
 <section id="how">
   <div class="wrap reveal">
-    <p class="eyebrow">02 — Architecture</p>
-    <h2>A containerised full-stack app on Azure.</h2>
-    <p class="section-lede">A React/Vite frontend (served by Nginx) talks to a FastAPI backend, which persists to PostgreSQL — all containerised and deployed on Azure App Service with CI/CD.</p>
-    <div class="archi">
-      <div class="box"><div class="tt">React + Vite</div><div class="ss">Nginx · Azure</div></div>
-      <span class="arrow">→</span>
-      <div class="box"><div class="tt">FastAPI</div><div class="ss">Azure App Svc</div></div>
-      <span class="arrow">→</span>
-      <div class="box"><div class="tt">PostgreSQL</div><div class="ss">Azure Flexible</div></div>
+    <p class="eyebrow">01 — How it works</p>
+    <h2>Three strategies, one honest trade-off.</h2>
+    <p class="section-lede">The catalog is a table of offers — <em>store sells product, in a pack of this size, for this price</em>. From it the engine totals baskets, splits across stores, and weighs item savings against the cost of an extra trip.</p>
+    <div class="grid3">
+      <div class="card"><div class="ic">🏪</div><h3>Single store</h3><p>Total each store’s basket (flagging items it doesn’t carry) and rank cheapest-first. One trip, whole list. <code>best_single_store</code></p></div>
+      <div class="card"><div class="ic">✂️</div><h3>Per-item split</h3><p>Buy each item wherever it’s cheapest. A true lower bound on item cost — but it may send you to every store. <code>per_item_cheapest</code></p></div>
+      <div class="card"><div class="ic">🎯</div><h3>≤k-store plan</h3><p>The real optimization: cheapest plan visiting at most <code>k</code> stores, with a fixed cost per trip. Solved exactly over store subsets. <code>best_constrained_split</code></p></div>
     </div>
   </div>
 </section>
 
-<section id="stack">
+<section id="unit">
   <div class="wrap reveal">
-    <p class="eyebrow">03 — Stack</p>
-    <h2>Built with.</h2>
-    <div class="stackgrid">
-      <div class="stackcol"><h4>Frontend</h4><ul><li>React 18 + Vite</li><li>React Router</li><li>Custom CSS</li><li>Nginx (prod)</li></ul></div>
-      <div class="stackcol"><h4>Backend</h4><ul><li>FastAPI (Python 3.11)</li><li>SQLAlchemy ORM</li><li>Alembic migrations</li><li>PostgreSQL</li></ul></div>
-      <div class="stackcol"><h4>DevOps</h4><ul><li>Docker + ACR</li><li>GitHub Actions CI/CD</li><li>Azure App Service</li><li>Application Insights</li></ul></div>
-    </div>
+    <p class="eyebrow">02 — Unit pricing</p>
+    <h2>The cheaper sticker isn’t always the better deal.</h2>
+    <p class="section-lede">Every pack is normalized to a base unit (kg / litre / each), so a larger pack with a higher price tag can still win on price-per-litre. From the committed catalog, Olive Oil:</p>
+    <table class="deal">
+      <thead><tr><th>Store</th><th>Pack</th><th>Price</th><th>Per litre</th></tr></thead>
+      <tbody>
+        <tr><td>GreenBasket</td><td>1 L</td><td>€6.20</td><td>€6.20 / L</td></tr>
+        <tr><td>MartMax</td><td>750 ml</td><td>€5.90</td><td>€7.87 / L</td></tr>
+        <tr class="win"><td>ValuMart</td><td>2 L</td><td>€9.60</td><td>€4.80 / L ✅</td></tr>
+      </tbody>
+    </table>
+    <p class="section-lede" style="margin-top:18px">ValuMart’s bottle has the <b>highest</b> sticker price but the <b>lowest</b> price per litre, so <code>best_unit_value("Olive Oil")</code> picks it.</p>
+  </div>
+</section>
+
+<section id="code">
+  <div class="wrap reveal">
+    <p class="eyebrow">03 — The engine</p>
+    <h2>Real, runnable, tested Python.</h2>
+    <p class="section-lede">The optimizer is a small package with a pytest suite that cross-checks the ≤k-store optimizer against brute force. The worked example below is the actual output of <code>demo.py</code> (trip cost €1.00/store).</p>
+    <pre class="code"><span class="c"># pip install -r requirements.txt</span>
+<span class="c"># python -m pytest -q   ->  13 passed</span>
+
+<span class="s">from</span> shopsmart <span class="s">import</span> (
+    demo_catalog, sample_shopping_list,
+    best_single_store, per_item_cheapest, best_constrained_split,
+)
+cat, sl = demo_catalog(), sample_shopping_list()
+
+best_single_store(cat, sl).total                                <span class="c"># 25.60 item</span>
+per_item_cheapest(cat, sl).item_cost                            <span class="c"># 23.55 (3 stores)</span>
+best_constrained_split(cat, sl, max_stores=2, visit_cost=1.0).total  <span class="c"># 25.90 all-in ✅</span></pre>
+
+    <table class="deal">
+      <thead><tr><th>Strategy</th><th>Stores</th><th>Item cost</th><th>Trips</th><th>All-in</th></tr></thead>
+      <tbody>
+        <tr><td>Best single store (GreenBasket)</td><td>1</td><td>€25.60</td><td>€1.00</td><td>€26.60</td></tr>
+        <tr><td>Per-item split</td><td>3</td><td>€23.55</td><td>€3.00</td><td>€26.55</td></tr>
+        <tr class="win"><td>Best ≤2-store (GreenBasket + MartMax)</td><td>2</td><td>€23.90</td><td>€2.00</td><td>€25.90 ✅</td></tr>
+      </tbody>
+    </table>
+    <p class="section-lede" style="margin-top:18px">The per-item split has the lowest item cost but three trips push it to €26.55. The ≤2-store plan wins all-in at <b>€25.90 — €0.70 (2.6%) under the best single store</b>.</p>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    ShopSmart · an interactive project showcase, built from scratch.
-    Store names and prices in the demo are sample data.
+    ShopSmart · a basket-optimization engine, built from scratch. The optimizer is real Python (<code>shopsmart/</code> + pytest); this page mirrors it in the browser. Catalog data is synthetic and for demonstration only.
   </div>
 </footer>
 
@@ -200,47 +235,139 @@
   const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.15});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-  const STORES=['FreshCo','MartMax','GreenBasket'];
-  // per-item prices across the 3 stores (sample data)
+  // ---- committed synthetic catalog (mirrors shopsmart/data.py) ----
+  // price is the per-pack price; null = store does not carry the item.
+  const STORES=['FreshCo','MartMax','GreenBasket','ValuMart'];
   const ITEMS=[
-    {n:'Milk 1L',     e:'🥛', p:[1.10,0.95,1.05]},
-    {n:'Bread',       e:'🍞', p:[1.40,1.55,1.30]},
-    {n:'Eggs ×12',    e:'🥚', p:[2.60,2.40,2.75]},
-    {n:'Bananas 1kg', e:'🍌', p:[1.20,1.15,1.10]},
-    {n:'Coffee 250g', e:'☕', p:[3.90,4.20,3.70]},
-    {n:'Rice 1kg',    e:'🍚', p:[1.80,1.70,1.90]},
-    {n:'Chicken 1kg', e:'🍗', p:[5.50,5.20,5.80]},
-    {n:'Pasta 500g',  e:'🍝', p:[0.95,1.05,0.90]},
+    {n:'Milk',         e:'🥛', q:2, p:[1.10,0.95,1.05,0.99]},
+    {n:'Bread',        e:'🍞', q:1, p:[1.40,1.55,1.30,1.20]},
+    {n:'Eggs',         e:'🥚', q:1, p:[2.60,2.40,2.75,2.30]},
+    {n:'Bananas',      e:'🍌', q:1, p:[1.20,1.15,1.10,null]},
+    {n:'Coffee',       e:'☕', q:1, p:[3.90,4.20,3.70,7.20]},
+    {n:'Chicken',      e:'🍗', q:1, p:[5.50,5.20,5.80,10.20]},
+    {n:'Pasta',        e:'🍝', q:2, p:[0.95,1.05,0.90,1.60]},
+    {n:'Cheese',       e:'🧀', q:1, p:[3.20,2.95,3.40,5.40]},
+    {n:'Orange Juice', e:'🧃', q:1, p:[2.30,null,2.10,1.95]},
+    {n:'Yogurt',       e:'🥣', q:1, p:[1.60,1.45,1.55,2.40]},
   ];
-  const sel=new Set([0,1,3]); // start with a small basket
+  const DEFAULT=new Set([0,1,2,3,4,5,6,7,8,9]); // sample weekly basket
+  const sel=new Set(DEFAULT);
+  let trip=1.0;
 
   const catalog=document.getElementById('catalog');
   const cmp=document.getElementById('cmp');
-  const summary=document.getElementById('summary');
+  const plansEl=document.getElementById('plans');
+  const tripEl=document.getElementById('trip');
+  const tripVal=document.getElementById('tripval');
+
+  const eur=v=>'€'+v.toFixed(2);
 
   function buildCatalog(){
-    catalog.innerHTML=ITEMS.map((it,i)=>`<button class="item" data-i="${i}" aria-pressed="${sel.has(i)}">${it.e} ${it.n} <span class="p">€${Math.min(...it.p).toFixed(2)}+</span></button>`).join('');
-  }
-  function render(){
-    const items=[...sel];
-    if(!items.length){ cmp.innerHTML='<div class="empty">Your basket is empty — tap an item above to compare prices.</div>'; summary.innerHTML=''; return; }
-    const totals=STORES.map((_,si)=>items.reduce((s,i)=>s+ITEMS[i].p[si],0));
-    const minTotal=Math.min(...totals); const winner=totals.indexOf(minTotal);
-    let head=`<tr><th>Item</th>${STORES.map((s,si)=>`<th class="store ${si===winner?'best':''}">${s}</th>`).join('')}</tr>`;
-    let body=items.map(i=>{
-      const row=ITEMS[i]; const cheapest=Math.min(...row.p);
-      return `<tr><td>${row.e} ${row.n}</td>${row.p.map((v,si)=>`<td class="${si===winner?'best':''} ${v===cheapest?'cheapcell':''}">€${v.toFixed(2)}</td>`).join('')}</tr>`;
+    catalog.innerHTML=ITEMS.map((it,i)=>{
+      const valid=it.p.filter(x=>x!=null);
+      const min=Math.min(...valid);
+      return `<button class="item" data-i="${i}" aria-pressed="${sel.has(i)}">${it.e} ${it.n}${it.q>1?' ×'+it.q:''} <span class="p">${eur(min)}+</span></button>`;
     }).join('');
-    let foot=`<tr><td>Basket total</td>${totals.map((t,si)=>`<td class="${si===winner?'best':''}">€${t.toFixed(2)}${si===winner?'<div class="winnerbadge">CHEAPEST</div>':''}</td>`).join('')}</tr>`;
-    cmp.innerHTML=`<table class="prices"><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table>`;
-    const save=(Math.max(...totals)-minTotal).toFixed(2);
-    summary.innerHTML=`Cheapest basket: <b>${STORES[winner]}</b> at <b>€${minTotal.toFixed(2)}</b> — you save €${save} vs. the priciest store.`;
   }
+
+  // price of item row i (qty included) at store si, or null if not carried
+  function lineCost(i,si){ const p=ITEMS[i].p[si]; return p==null?null:p*ITEMS[i].q; }
+
+  // best item cost for a fixed set of store indices; null if set can't fulfil
+  function setCost(items,storeIdx){
+    let cost=0; const used=new Set();
+    for(const i of items){
+      let best=Infinity, bestS=-1;
+      for(const si of storeIdx){ const c=lineCost(i,si); if(c!=null && c<best){best=c;bestS=si;} }
+      if(bestS<0) return null;
+      cost+=best; used.add(bestS);
+    }
+    return {cost, used};
+  }
+
+  // exact <=k-store optimum via subset enumeration (mirrors best_constrained_split)
+  function bestConstrained(items,k){
+    const idx=[...STORES.keys()]; let best=null;
+    const combos=(arr,kk)=>{ const out=[]; const rec=(start,acc)=>{ if(acc.length===kk){out.push(acc.slice());return;} for(let j=start;j<arr.length;j++){acc.push(arr[j]);rec(j+1,acc);acc.pop();}}; rec(0,[]); return out; };
+    for(let kk=1;kk<=Math.min(k,idx.length);kk++){
+      for(const subset of combos(idx,kk)){
+        const r=setCost(items,subset); if(!r) continue;
+        const total=r.cost+trip*r.used.size;
+        if(!best||total<best.total-1e-9) best={total,item:r.cost,used:new Set(r.used)};
+      }
+    }
+    return best;
+  }
+
+  function render(){
+    const items=[...sel].sort((a,b)=>a-b);
+    if(!items.length){ cmp.innerHTML='<div class="empty">Your basket is empty — tap an item above.</div>'; plansEl.innerHTML=''; return; }
+
+    // single-store totals (over carried items)
+    const totals=STORES.map((_,si)=>items.reduce((s,i)=>{const c=lineCost(i,si);return c==null?s:s+c;},0));
+    const complete=STORES.map((_,si)=>items.every(i=>ITEMS[i].p[si]!=null));
+    // best complete single store
+    let bestSingle=-1,bestSingleTot=Infinity;
+    STORES.forEach((_,si)=>{ if(complete[si]&&totals[si]<bestSingleTot){bestSingleTot=totals[si];bestSingle=si;} });
+
+    // price table
+    let head=`<tr><th>Item</th>${STORES.map((s,si)=>`<th class="${si===bestSingle?'best':''}">${s}</th>`).join('')}</tr>`;
+    let body=items.map(i=>{
+      const row=ITEMS[i];
+      const valid=row.p.filter(x=>x!=null); const cheapest=Math.min(...valid);
+      return `<tr><td>${row.e} ${row.n}${row.q>1?' ×'+row.q:''}</td>${row.p.map((v,si)=>{
+        if(v==null) return `<td class="na ${si===bestSingle?'best':''}">n/a</td>`;
+        return `<td class="${si===bestSingle?'best':''} ${v===cheapest?'cheapcell':''}">${eur(v*row.q)}</td>`;
+      }).join('')}</tr>`;
+    }).join('');
+    let foot=`<tr><td>Basket total</td>${totals.map((t,si)=>`<td class="${si===bestSingle?'best':''}">${complete[si]?eur(t):'—'}${si===bestSingle?'<div class="winnerbadge">CHEAPEST 1-STORE</div>':''}</td>`).join('')}</tr>`;
+    cmp.innerHTML=`<table class="prices"><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table>`;
+
+    // per-item-cheapest split (lower bound on item cost)
+    let splitItem=0; const splitUsed=new Set();
+    for(const i of items){ let best=Infinity,bs=-1; ITEMS[i].p.forEach((v,si)=>{const c=lineCost(i,si);if(c!=null&&c<best){best=c;bs=si;}}); if(bs>=0){splitItem+=best;splitUsed.add(bs);} }
+    const splitTotal=splitItem+trip*splitUsed.size;
+
+    // best <=2-store constrained plan
+    const c2=bestConstrained(items,2);
+    const oneTrip = bestSingle>=0 ? bestSingleTot+trip : Infinity;
+
+    // winner among the all-in totals
+    const cand=[
+      {key:'single', total:oneTrip},
+      {key:'split',  total:splitTotal},
+      {key:'two',    total:c2?c2.total:Infinity},
+    ];
+    const winKey=cand.reduce((a,b)=>b.total<a.total?b:a).key;
+
+    plansEl.innerHTML=`
+      <div class="plan ${winKey==='single'?'win':''}">
+        <div class="lab">Single store</div>
+        <div class="big">${bestSingle>=0?eur(oneTrip):'—'}</div>
+        <div class="sub">${bestSingle>=0?STORES[bestSingle]+' · 1 trip · items '+eur(bestSingleTot):'no store carries everything'}</div>
+        ${winKey==='single'?'<span class="tag">CHEAPEST ALL-IN</span>':''}
+      </div>
+      <div class="plan ${winKey==='two'?'win':''}">
+        <div class="lab">Best ≤2-store plan</div>
+        <div class="big">${c2?eur(c2.total):'—'}</div>
+        <div class="sub">${c2?c2.used.size+' store'+(c2.used.size>1?'s':'')+' ('+[...c2.used].map(si=>STORES[si]).join(' + ')+') · items '+eur(c2.item):'—'}</div>
+        ${winKey==='two'?'<span class="tag">CHEAPEST ALL-IN</span>':''}
+      </div>
+      <div class="plan ${winKey==='split'?'win':''}">
+        <div class="lab">Per-item split (lower bound)</div>
+        <div class="big">${eur(splitTotal)}</div>
+        <div class="sub">${splitUsed.size} stores · lowest item cost ${eur(splitItem)}</div>
+        ${winKey==='split'?'<span class="tag">CHEAPEST ALL-IN</span>':''}
+      </div>`;
+  }
+
   catalog.addEventListener('click',e=>{
     const b=e.target.closest('.item'); if(!b) return;
     const i=+b.dataset.i; sel.has(i)?sel.delete(i):sel.add(i);
     b.setAttribute('aria-pressed', sel.has(i)?'true':'false'); render();
   });
+  tripEl.addEventListener('input',e=>{ trip=parseFloat(e.target.value); tripVal.textContent=eur(trip); render(); });
+
   buildCatalog(); render();
 </script>
 </body>
